@@ -1,3 +1,6 @@
+
+#This code was coded through the CS164 networks class at UCR
+#This code was written by Phillip Zachariah
 import socket
 import sys
 import time
@@ -7,12 +10,6 @@ HOST = ''
 PORT = 1114
 
 
-'''
-THINGS TO DO:
-1. MAKE SURE TO FLUSH OUT ALL VARIABLES
-2. ADMIN
-3. WHEN EXITING NOT ALL OF THEM EXIT
-'''
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print 'Socket created'
 myList =[]
@@ -23,6 +20,20 @@ except socket.error ,msg:
     sys.exit()
 
 print 'Socket bind complete'
+#IMPORTANT GLOBAL VARIABLES
+"""
+    UsrPswarray  - Array that holds on Users and their passwords so that their are no duplicates
+    
+    Dictionary   - Holds all the words that can be used in the Hangman Game
+    
+    GameNameList - Multiple games can be ran at one time so this is a list of all curr running Game names
+    
+    GameList     - List that Holds all the game objects(Gameobjects consist of gamename(string),lives(int),
+                 - PlayerList(arrayofString ,score) , currentspread(string) )
+                 
+    HOFLIST      - Holds all players that win a HangmanG Game
+    
+"""
 dummy = ['dummy','test']
 UsrPswArray  = [dummy]
 Dictionary = ["dog","cat","bird","puppy"]
@@ -40,13 +51,8 @@ def InGame(conn,GameObject):
 	global doneflag
         doneflag = 0 
 	currplayernum = 0
-#GameObject = [gamename,lives,PlayerandScoreList,GameWord,currentspread,connectionlist]
  	currentspread = []
-        #print "connection with object4"
-        #print len(GameObject[5])
-        #print "\n"
         for x in GameObject[5]:
-         #       print str(x);
                 sendstring = "----------------------this player has joined: "                 
                 x.sendall("\n") 
                 x.sendall(sendstring)
@@ -226,21 +232,16 @@ def GameLoginFunc(conn):
                 #Gameobject consists of:gamename(string),lives(int),PlayerList(arrayofString, GameWord)                  # also consists of string  currentspreaad
                 NameAndScoreObj = [playername.rstrip(),score]
                 PlayerandScoreList.append(NameAndScoreObj)
-                #index = 0
-                #print "player list length: "
-                #print len(PlayerandScoreList)
-                #connectionlist.append(connqueue[curr])
+)
                 
                 connectionlist=[]
                 connectionlist.append(conn)
                 GameObject = [gamename,lives,PlayerandScoreList,GameWord,currentspread,connectionlist]
                 GameList.append(GameObject)
-                #print "GameList " + str(len(GameList))
+
                 gamelistsize = len(GameList)
 		conn.sendall(str(gamelistsize))
-		#index= index+1 	
-                #STARTING GAME WITH THIS FUNCTION
-                #print " Game is Starting \n"
+
                 InGame(conn,GameObject)
         if(data[0] == '2'):
                 
@@ -272,17 +273,17 @@ def GameLoginFunc(conn):
         if(data[0] == '4'):
                break;
 
+#clientthread function is the function that sends the general menu choices to the clients.
+#The clientthread then waits for that specific client returns user input  to continue.
 def clientthread(conn):
-    #initalizes list to zero  NOTE: POSSIBLE BUG 
+ 
    
     while True:
-        #sendall does not mean sends to all other clients
+  
         conn.sendall("PLEASE CHOOSE AN OPTION:\n1.login\n2.Make New User\n3. Hall of Fame\n4.Exit\n")
         data = conn.recv(1024)
-        #print "just received data"
-        #print data
+
         if data[0] == '1':
-         #   print "inside 1"
             conn.sendall("username: ")
             UsrName = conn.recv(1024)
             conn.sendall("password: ")
@@ -325,6 +326,9 @@ def clientthread(conn):
     
 
     conn.close()
+
+#serverthread is a function used to setup admin menu page that is displayed on teh server process.
+#This works by creating a new thread before it goes into the general while loop
 def serverthread(x):
 	while 1:
 		print("1.Current List of User")
@@ -341,6 +345,10 @@ def serverthread(x):
 			word = raw_input("enter word: ")
 			Dictionary.append(word.rstrip())
 start_new_thread(serverthread,(0,))
+
+
+# main code while loop
+# waits for a client to connect with it and then it creates a new process with clienthread
 while 1:
 
     conn, addr = s.accept() 
